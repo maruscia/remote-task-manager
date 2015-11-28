@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/script/script_test.bat" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/bower_components/angular" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/bower_components/angular-animate" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/bower_components/angular-mocks" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/bower_components/angular-resource" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/bower_components/angular-route" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/bower_components/bootstrap" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/bower_components/jquery" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/css" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/img" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/js" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/partials" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/static/phones" charset="windows-1252" />
+  </component>
+</project>

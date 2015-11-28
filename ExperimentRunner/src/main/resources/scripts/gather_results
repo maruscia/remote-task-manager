@@ -1,0 +1,94 @@
+#!/bin/bash
+#$1: DATASET
+#$2: TYPE
+#$3: LA
+#$4: LP
+#$4: IP_ADDRESS
+
+usage() { echo "Usage: $0 [-u user] [-d <"LASTFM"|"WIKIPEDIA">] [-t <"GLOBAL"|"HYPERCUBE">] [-i <string>] [-a <double>] [-p <double>]" 1>&2; exit 1; }
+
+while getopts ":d:t:i:a:p:" o; do
+	
+    case "${o}" in
+    	u)
+            USERNAME=${OPTARG}
+            ;;
+        d)
+            DATASET=${OPTARG}
+            ((DATASET == "LASTFM" || DATASET == "WIKIPEDIA")) || usage
+            ;;
+        t)
+            TYPE=${OPTARG}
+            ((TYPE== "GLOBAL" || TYPE == "HYPERCUBE")) || usage
+            ;;
+        i)
+            ADDRESS=${OPTARG}
+            ;;
+        a)
+            LA=${OPTARG}
+            ;;
+        p)
+            LP=${OPTARG}
+            ;;
+
+        *)	
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ -z "${DATASET}" ] || [ -z "${TYPE}" ] || [ -z "${ADDRESS}" ] || [ -z "${LA}" ] || [ -z "${LP}" ]; then
+    echo "A required field is missing."
+    usage
+fi
+
+EXPERIMENT_NAME=${DATASET}_${TYPE}_${LA}_${LP}
+BASE_DIR="/home/maru/exps"
+MY_HOME="/Users/maru/experiments_runner"
+
+echo "---------------------------------------------"
+echo "     GATHERING RESULTS OF EXPERIMENT:        "
+echo "---------------------------------------------"
+echo "name=${EXPERIMENT_NAME}"
+echo "dataset = ${DATASET}"
+echo "type = ${TYPE}"
+echo "lambda_a = ${LA}"
+echo "lambda_p = ${LP}"
+echo "machine address = ${ADDRESS}"
+echo "---------------------------------------------"
+echo ""
+
+cd ${MY_HOME}"/EXPERIMENTS/"${EXPERIMENT_NAME} 
+
+if [ -d ${EXPERIMENT_NAME}"_results" ]; then
+    echo "A directory named ${EXPERIMENT_NAME}_results already exists. Renaming to old."
+    #read choice
+    #case $choice in
+    #    [Yy]* ) rm -rf ${EXPERIMENT_NAME}/*; break;
+    #    [Nn]* ) EOF; exit(-1);
+    #    * ) echo "Please answer yes or no.";;
+    #esac
+    if [ -d ${EXPERIMENT_NAME}"_results_old" ]; then
+        rm -rf ${EXPERIMENT_NAME}"_results_old"
+    fi
+    mv ${EXPERIMENT_NAME}"_results" ${EXPERIMENT_NAME}"_results_old"    
+    
+fi
+
+mkdir ${EXPERIMENT_NAME}"_results"
+
+cd ${EXPERIMENT_NAME}"_results"
+
+#edit here to scp your custom files
+
+scp  -o "StrictHostKeyChecking no" ${USERNAME}@${ADDRESS}:${BASE_DIR}/${EXPERIMENT_NAME}/best*.mat .
+scp  -o "StrictHostKeyChecking no" ${USERNAME}@${ADDRESS}:${BASE_DIR}/${EXPERIMENT_NAME}/pswarm*.mat .
+scp  -o "StrictHostKeyChecking no" ${USERNAME}@${ADDRESS}:${BASE_DIR}/${EXPERIMENT_NAME}/MaxA* .
+scp  -o "StrictHostKeyChecking no" ${USERNAME}@${ADDRESS}:${BASE_DIR}/${EXPERIMENT_NAME}/SumP* .
+
+exit
+
+
+
+

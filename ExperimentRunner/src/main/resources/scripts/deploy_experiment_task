@@ -1,0 +1,131 @@
+#!/bin/bash
+#$1: DATASET
+#$2: TYPE
+#$3: LA
+#$4: LP
+#$4: IP_ADDRESS
+#$5: ASSIGNED_CORES
+
+usage() { echo "Usage: $0 [-u username] [-d <"LASTFM"|"WIKIPEDIA">] [-t <"GLOBAL"|"HYPERCUBE">] [-i <string>] [-a <double>] [-p <double>] [-c <int>]" 1>&2; exit 1; }
+
+while getopts ":d:t:i:a:p:c:" o; do
+	
+    case "${o}" in
+    	u)
+            USERNAME=${OPTARG}
+            ;;
+        d)
+            DATASET=${OPTARG}
+            ((DATASET == "LASTFM" || DATASET == "WIKIPEDIA")) || usage
+            ;;
+        t)
+            TYPE=${OPTARG}
+            ((TYPE== "GLOBAL" || TYPE == "HYPERCUBE")) || usage
+            ;;
+        i)
+            ADDRESS=${OPTARG}
+            ;;
+        a)
+            LA=${OPTARG}
+            ;;
+        p)
+            LP=${OPTARG}
+            ;;
+        c)
+            ASSIGNED_CORES=${OPTARG}
+            ;;
+
+        *)	
+            usage
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+if [ -z "${DATASET}" ] || [ -z "${TYPE}" ] || [ -z "${ADDRESS}" ] || [ -z "${LA}" ] || [ -z "${LP}" ] || [ -z "${ASSIGNED_CORES}" ]; then
+    echo "Required field is missing."
+    usage
+fi
+
+EXPERIMENT_NAME=${DATASET}_${TYPE}_${LA}_${LP}
+BASE_DIR="/home/maru/exps"
+MY_HOME="/Users/maru/experiments_runner"
+
+echo "-----------------------------"
+echo "     EXPERIMENT SETUP        "
+echo "-----------------------------"
+echo "name=${EXPERIMENT_NAME}"
+echo "dataset = ${DATASET}"
+echo "type = ${TYPE}"
+echo "lambda_a = ${LA}"
+echo "lambda_p = ${LP}"
+echo "machine address = ${ADDRESS}"
+echo "#cores = ${ASSIGNED_CORES}"
+echo "-----------------------------"
+echo ""
+
+if [ ! -d ${MY_HOME}"/EXPERIMENTS/"${EXPERIMENT_NAME} ]; then
+	mkdir ${MY_HOME}"/EXPERIMENTS/"${EXPERIMENT_NAME}
+else
+	echo "A directory named ${EXPERIMENT_NAME} already exists for this experiment. Overwriting."
+	#read choice
+	#case $choice in
+    #    [Yy]* ) rm -rf ${EXPERIMENT_NAME}/*; break;
+    #    [Nn]* ) EOF; exit(-1);
+    #    * ) echo "Please answer yes or no.";;
+    #esac
+    rm -rf ${MY_HOME}"/EXPERIMENTS/"${EXPERIMENT_NAME}/*
+fi
+cd ${MY_HOME}"/EXPERIMENTS/"${EXPERIMENT_NAME}
+mkdir files
+cd ./files
+
+cp ${MY_HOME}"/DEFINITIONS/"${DATASET}"_"${TYPE}/* .
+
+ssh  -o "StrictHostKeyChecking no" maru@${ADDRESS} << EOF
+if [ ! -d "${BASE_DIR}" ]; then
+  # create exps dir
+  echo "No experiments main directory ${BASE_DIR} found. Creating..."
+  mkdir ${BASE_DIR}
+fi
+
+cd ~/exps
+if [ ! -d "${EXPERIMENT_NAME}" ]; then
+	mkdir ${EXPERIMENT_NAME}
+else
+	echo "A directory named ${EXPERIMENT_NAME} already exists. Overwriting."
+	#read choice
+	#case $choice in
+    #    [Yy]* ) rm -rf ${EXPERIMENT_NAME}/*; break;
+    #    [Nn]* ) EOF; exit(-1);
+    #    * ) echo "Please answer yes or no.";;
+    #esac
+    rm -rf ${EXPERIMENT_NAME}/*
+fi
+
+EOF
+
+
+scp  -o "StrictHostKeyChecking no" * ${USERNAME}@${ADDRESS}:${BASE_DIR}/${EXPERIMENT_NAME}/
+
+if [ ${DATASET} == "LASTFM" ]; then
+	TO_BE_LAUNCHED="\"matlab -nodisplay -nosplash -nodesktop -r \\\"pred_error_swarm('"${ASSIGNED_CORES}"','"${TYPE}"','"${LA}"','"${LP}"')\\\"; exec bash -l\""
+else
+	TO_BE_LAUNCHED="\"matlab -nodisplay -nosplash -nodesktop -r \\\"pred_error_swarm_wiki('"${ASSIGNED_CORES}"','"${TYPE}"','"${LA}"','"${LP}"')\\\"; exec bash -l\""
+
+fi
+echo ${TO_BE_LAUNCHED}
+
+ssh  -o "StrictHostKeyChecking no" -t -t ${USERNAME}@${ADDRESS} << EOF
+cd ${BASE_DIR}/${EXPERIMENT_NAME}
+ls
+
+screen -dmS ${EXPERIMENT_NAME} bash -c ${TO_BE_LAUNCHED}
+exit
+
+
+
+
+
+
+
